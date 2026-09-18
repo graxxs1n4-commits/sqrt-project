@@ -1,18 +1,74 @@
+import math
+import re
 from decimal import Decimal, InvalidOperation, getcontext
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import cmath
-import math
 
 app = FastAPI(title="Root Calculator")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
+
+_COMPLEX_RE = re.compile(
+    r"^(?P<real>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)?"
+    r"(?P<imag>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)i$"
+)
+
+
+def parse_complex(text: str):
+    """Разбирает строку как complex. Возвращает complex или None."""
+    text = text.strip().replace(" ", "")
+    if not text:
+        return None
+
+    if "i" not in text and "I" not in text:
+        try:
+            return complex(Decimal(text), 0)
+        except InvalidOperation:
+            return None
+
+    text = text.replace("I", "i")
+
+    if text in ("i", "+i"):
+        return complex(0, 1)
+    if text == "-i":
+        return complex(0, -1)
+
+    m = _COMPLEX_RE.match(text)
+    if not m:
+        return None
+
+    real_str = m.group("real")
+    imag_str = m.group("imag")
+
+    try:
+        if real_str in (None, "", "+", "-"):
+            real = Decimal(0)
+        else:
+            real = Decimal(real_str)
+    except InvalidOperation:
+        return None
+
+    if imag_str in (None, "", "+"):
+        imag = Decimal(1)
+    elif imag_str == "-":
+        imag = Decimal(-1)
+    else:
+        try:
+            imag = Decimal(imag_str)
+        except InvalidOperation:
+            return None
+
+    return complex(real, imag)
+
+
+
 def decimal_root(value: Decimal, degree: int, precision: int) -> Decimal:
-    """Newton's method for a real root with arbitrary Decimal precision."""
+    """Метод Ньютона для действительного корня с заданной точностью."""
     getcontext().prec = precision + 15
 
     if value == 0:
@@ -47,7 +103,20 @@ def format_decimal(value: Decimal, precision: int | None = None) -> str:
     return f"{value:.{precision}f}"
 
 
-def all_complex_roots(value: float, degree: int):
+
+def all_roots_of_complex(z: complex, degree: int):
+    """Все n корней n-й степени из комплексного числа z (формула Муавра)."""
+    r = abs(z) ** (1.0 / degree)
+    phi = math.atan2(z.imag, z.real)
+    roots = []
+    for k in range(degree):
+        angle = (phi + 2 * math.pi * k) / degree
+        roots.append(complex(r * math.cos(angle), r * math.sin(angle)))
+    return roots
+
+
+def all_complex_roots_real(value: float, degree: int):
+    """Все n корней из действительного числа (для отрицательных + чётная степень)."""
     r = abs(value) ** (1.0 / degree)
     theta = math.atan2(0.0, value) if value >= 0 else math.pi
     roots = []
@@ -57,12 +126,26 @@ def all_complex_roots(value: float, degree: int):
     return roots
 
 
+def format_complex(z: complex, precision: int) -> str:
+    eps = 10 ** (-(precision + 1))
+    re = 0.0 if abs(z.real) < eps else z.real
+    im = 0.0 if abs(z.imag) < eps else z.imag
+
+    if abs(im) < eps:
+        return f"{re:.{precision}f}".rstrip("0").rstrip(".")
+    if abs(re) < eps:
+        return f"{im:.{precision}f}i"
+    sign = "+" if im >= 0 else "-"
+    return f"{re:.{precision}f} {sign} {abs(im):.{precision}f}i"
+
+
+
 @app.get("/")
 async def index(request: Request):
     return templates.TemplateResponse(
         request=request,
-        name="index.html"
-)
+        name="index.html",
+    )
 
 
 @app.post("/calculate")
@@ -78,9 +161,8 @@ async def calculate(data: dict):
     if not degree_text:
         return {"ok": False, "error": "degree_required"}
 
-    try:
-        number = Decimal(number_text)
-    except InvalidOperation:
+    z = parse_complex(number_text)
+    if z is None:
         return {"ok": False, "error": "not_number"}
 
     try:
@@ -90,6 +172,29 @@ async def calculate(data: dict):
 
     if degree <= 0:
         return {"ok": False, "error": "degree_positive"}
+
+    if z.imag != 0:
+        if precision_text:
+            try:
+                precision = int(precision_text)
+            except ValueError:
+                return {"ok": False, "error": "precision_integer"}
+            if precision < 0 or precision > 100:
+                return {"ok": False, "error": "precision_range"}
+        else:
+            precision = 6
+
+        roots = all_roots_of_complex(z, degree)
+        formatted = [format_complex(r, precision) for r in roots]
+
+        return {
+            "ok": True,
+            "type": "complex",
+            "roots": formatted,
+            "analytical": f"z^({degree}) = {number_text}" if analytical else None,
+        }
+
+    number = Decimal(str(z.real))
 
     if number == 0:
         return {
@@ -103,32 +208,18 @@ async def calculate(data: dict):
         if not complex_mode:
             return {"ok": False, "error": "even_negative"}
 
-        roots = all_complex_roots(float(number), degree)
-        precision = None
-
         if precision_text:
             try:
                 precision = int(precision_text)
-                if precision < 0 or precision > 100:
-                    return {"ok": False, "error": "precision_range"}
             except ValueError:
                 return {"ok": False, "error": "precision_integer"}
+            if precision < 0 or precision > 100:
+                return {"ok": False, "error": "precision_range"}
         else:
             precision = 6
 
-        formatted = []
-        for z in roots:
-            re = 0.0 if abs(z.real) < 10 ** (-(precision + 1)) else z.real
-            im = 0.0 if abs(z.imag) < 10 ** (-(precision + 1)) else z.imag
-            if abs(im) < 10 ** (-(precision + 1)):
-                formatted.append(f"{re:.{precision}f}".rstrip("0").rstrip("."))
-            elif abs(re) < 10 ** (-(precision + 1)):
-                formatted.append(f"{im:.{precision}f}i")
-            else:
-                sign = "+" if im >= 0 else "-"
-                formatted.append(
-                    f"{re:.{precision}f} {sign} {abs(im):.{precision}f}i"
-                )
+        roots = all_complex_roots_real(float(number), degree)
+        formatted = [format_complex(r, precision) for r in roots]
 
         return {
             "ok": True,
@@ -146,7 +237,11 @@ async def calculate(data: dict):
 
             if is_integer:
                 root_text = format_decimal(root)
-                roots = [f"+{root_text}", f"-{root_text}"] if degree % 2 == 0 else [root_text]
+                roots = (
+                    [f"+{root_text}", f"-{root_text}"]
+                    if degree % 2 == 0
+                    else [root_text]
+                )
             else:
                 if not precision_text:
                     return {"ok": False, "error": "precision_required"}
@@ -160,7 +255,11 @@ async def calculate(data: dict):
                 getcontext().prec = precision + 15
                 root = decimal_root(number, degree, precision)
                 root_text = format_decimal(root, precision)
-                roots = [f"+{root_text}", f"-{root_text}"] if degree % 2 == 0 else [root_text]
+                roots = (
+                    [f"+{root_text}", f"-{root_text}"]
+                    if degree % 2 == 0
+                    else [root_text]
+                )
         else:
             if number < 0 and degree % 2 == 1:
                 if not precision_text:
