@@ -1,7 +1,7 @@
 const translations = {
     ru: {
         title: "Извлечение корня",
-        subtitle: "Корень любой степени, действительные и комплексные корни",
+        subtitle: "Корень любой степени, действительные и комплексные числа",
         number: "Число",
         degree: "Степень корня",
         precision: "Знаков после запятой",
@@ -10,10 +10,9 @@ const translations = {
         calculate: "Вычислить",
         result: "Результат",
         footer: "Язык можно менять без перезапуска программы.",
-        numberPlaceholder: "Например: 16",
+        numberPlaceholder: "Например: 16 или 3+4i",
         degreePlaceholder: "Например: 4",
         precisionPlaceholder: "Например: 6",
-        precisionPrompt: "Результат не является целым числом. Укажите количество знаков после запятой ниже.",
         errors: {
             number_required: "Введите число.",
             degree_required: "Введите степень корня.",
@@ -30,7 +29,7 @@ const translations = {
     },
     en: {
         title: "Root Calculator",
-        subtitle: "Roots of any degree, real and complex roots",
+        subtitle: "Roots of any degree, real and complex numbers",
         number: "Number",
         degree: "Root degree",
         precision: "Decimal places",
@@ -39,10 +38,9 @@ const translations = {
         calculate: "Calculate",
         result: "Result",
         footer: "The language can be changed without restarting the program.",
-        numberPlaceholder: "For example: 16",
+        numberPlaceholder: "For example: 16 or 3+4i",
         degreePlaceholder: "For example: 4",
         precisionPlaceholder: "For example: 6",
-        precisionPrompt: "The result is not an integer. Enter the number of decimal places below.",
         errors: {
             number_required: "Enter a number.",
             degree_required: "Enter the root degree.",
@@ -123,12 +121,27 @@ function showPrecisionBox(show) {
     }
 }
 
-// Прячем поле точности, если пользователь меняет число или степень
-["number", "degree"].forEach(id => {
-    document.getElementById(id).addEventListener("input", () => {
+function looksComplex(value) {
+    return /i/i.test(value);
+}
+
+// При вводе комплексного числа — сразу показываем поле точности
+// При изменении числа или степени — прячем поле точности
+document.getElementById("number").addEventListener("input", () => {
+    const value = document.getElementById("number").value;
+    if (looksComplex(value)) {
+        showPrecisionBox(true);
+        const p = document.getElementById("precision");
+        if (!p.value) p.value = "6";
+    } else {
         showPrecisionBox(false);
-        showMessage("");
-    });
+    }
+    showMessage("");
+});
+
+document.getElementById("degree").addEventListener("input", () => {
+    showPrecisionBox(false);
+    showMessage("");
 });
 
 document.getElementById("calculate").addEventListener("click", async () => {
