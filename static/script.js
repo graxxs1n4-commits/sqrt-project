@@ -10,7 +10,8 @@ const translations = {
         calculate: "Вычислить",
         result: "Результат",
         footer: "Язык можно менять без перезапуска программы.",
-        numberPlaceholder: "Например: 16, 2.25 или 3+4i",
+        numberPlaceholder: "Например: 16, 3+4i, sin(pi/4), sqrt(2)",
+        hint: "Поддерживаются: + − * / ^, sqrt, sin, cos, tan, log, ln, exp, pi, e, deg(...)",
         degreePlaceholder: "Например: 4",
         precisionPlaceholder: "Например: 6",
         errors: {
@@ -27,6 +28,7 @@ const translations = {
             even_negative: "Для отрицательного числа и четной степени нужны комплексные корни. Включите эту возможность.",
             calculation_error: "Не удалось выполнить вычисление.",
             unsupported: "Для этих входных данных невозможно получить действительный корень."
+            expression_has_variables: "Выражение содержит переменную. Введите число или числовое выражение.",
         }
     },
     en: {
@@ -40,7 +42,8 @@ const translations = {
         calculate: "Calculate",
         result: "Result",
         footer: "The language can be changed without restarting the program.",
-        numberPlaceholder: "For example: 16, 2.25 or 3+4i",
+        numberPlaceholder: "For example: 16, 3+4i, sin(pi/4), sqrt(2)",
+        hint: "Supported: + − * / ^, sqrt, sin, cos, tan, log, ln, exp, pi, e, deg(...)",
         degreePlaceholder: "For example: 4",
         precisionPlaceholder: "For example: 6",
         errors: {
@@ -57,6 +60,7 @@ const translations = {
             even_negative: "A negative number with an even degree requires complex roots. Enable this option.",
             calculation_error: "The calculation could not be completed.",
             unsupported: "A real root cannot be obtained for these inputs."
+            expression_has_variables: "The expression contains a variable. Enter a number or a numeric expression.",
         }
     },
     fr: {
@@ -71,6 +75,7 @@ const translations = {
         result: "Résultat",
         footer: "La langue peut être changée sans redémarrer le programme.",
         numberPlaceholder: "Ex. : 16, 2,25 ou 3+4i",
+        hint: "Pris en charge : + − * / ^, sqrt, sin, cos, tan, log, ln, exp, pi, e, deg(...)",
         degreePlaceholder: "Ex. : 4",
         precisionPlaceholder: "Ex. : 6",
         errors: {
@@ -87,6 +92,7 @@ const translations = {
             even_negative: "Un nombre négatif avec un indice pair nécessite les racines complexes. Activez cette option.",
             calculation_error: "Le calcul n’a pas pu être effectué.",
             unsupported: "Impossible d’obtenir une racine réelle avec ces valeurs."
+            expression_has_variables: "L'expression contient une variable. Entrez un nombre ou une expression numérique."
         }
     }
 };
