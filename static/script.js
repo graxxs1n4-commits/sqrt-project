@@ -58,10 +58,41 @@ const translations = {
             calculation_error: "The calculation could not be completed.",
             unsupported: "A real root cannot be obtained for these inputs."
         }
+    },
+    fr: {
+        title: "Calculateur de racines",
+        subtitle: "Racines de tout degré, nombres réels et complexes",
+        number: "Nombre",
+        degree: "Indice de la racine",
+        precision: "Nombre de décimales",
+        complex: "Afficher les racines complexes",
+        analytical: "Afficher la forme analytique",
+        calculate: "Calculer",
+        result: "Résultat",
+        footer: "La langue peut être changée sans redémarrer le programme.",
+        numberPlaceholder: "Ex. : 16, 2,25 ou 3+4i",
+        degreePlaceholder: "Ex. : 4",
+        precisionPlaceholder: "Ex. : 6",
+        errors: {
+            number_required: "Veuillez saisir un nombre.",
+            degree_required: "Veuillez saisir l’indice de la racine.",
+            number_too_large: "Le nombre est trop grand. Maximum : 5000 caractères.",
+            degree_too_large: "L’indice est trop grand. Maximum : 1000.",
+            not_number: "La valeur saisie n’est pas un nombre.",
+            degree_integer: "L’indice doit être un entier.",
+            degree_positive: "L’indice de la racine doit être supérieur à zéro.",
+            precision_required: "Le résultat n’est pas un entier. Indiquez le nombre de décimales ci-dessous.",
+            precision_integer: "Le nombre de décimales doit être un entier.",
+            precision_range: "Le nombre de décimales doit être compris entre 0 et 100.",
+            even_negative: "Un nombre négatif avec un indice pair nécessite les racines complexes. Activez cette option.",
+            calculation_error: "Le calcul n’a pas pu être effectué.",
+            unsupported: "Impossible d’obtenir une racine réelle avec ces valeurs."
+        }
     }
 };
 
-let language = localStorage.getItem("rootCalculatorLanguage") || "ru";
+let language = ["ru", "en", "fr"].includes(localStorage.getItem("rootCalculatorLanguage"))
+    ? localStorage.getItem("rootCalculatorLanguage") : "ru";
 
 function applyLanguage() {
     const t = translations[language];
@@ -75,11 +106,13 @@ function applyLanguage() {
     document.getElementById("number").placeholder = t.numberPlaceholder;
     document.getElementById("degree").placeholder = t.degreePlaceholder;
     document.getElementById("precision").placeholder = t.precisionPlaceholder;
-    document.getElementById("languageButton").textContent = language === "ru" ? "EN" : "RU";
+    const nextLanguage = {ru: "EN", en: "FR", fr: "RU"};
+    document.getElementById("languageButton").textContent = nextLanguage[language];
+    document.getElementById("languageButton").setAttribute("aria-label", `Switch language to ${nextLanguage[language]}`);
 }
 
 document.getElementById("languageButton").addEventListener("click", () => {
-    language = language === "ru" ? "en" : "ru";
+    language = {ru: "en", en: "fr", fr: "ru"}[language];
     localStorage.setItem("rootCalculatorLanguage", language);
     applyLanguage();
     showMessage("");
