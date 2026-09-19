@@ -10,8 +10,7 @@ const translations = {
         calculate: "Вычислить",
         result: "Результат",
         footer: "Язык можно менять без перезапуска программы.",
-        numberPlaceholder: "Например: 16, 3+4i, sin(pi/4), sqrt(2)",
-        hint: "Поддерживаются: + − * / ^, sqrt, sin, cos, tan, log, ln, exp, pi, e, deg(...)",
+        numberPlaceholder: "Например: 16, 3+4i, sqrt(2)",
         degreePlaceholder: "Например: 4",
         precisionPlaceholder: "Например: 6",
         errors: {
@@ -41,8 +40,7 @@ const translations = {
         calculate: "Calculate",
         result: "Result",
         footer: "The language can be changed without restarting the program.",
-        numberPlaceholder: "For example: 16, 3+4i, sin(pi/4), sqrt(2)",
-        hint: "Supported: + − * / ^, sqrt, sin, cos, tan, log, ln, exp, pi, e, deg(...)",
+        numberPlaceholder: "For example: 16, 3+4i, sqrt(2)",
         degreePlaceholder: "For example: 4",
         precisionPlaceholder: "For example: 6",
         errors: {
@@ -73,7 +71,6 @@ const translations = {
         result: "Résultat",
         footer: "La langue peut être changée sans redémarrer le programme.",
         numberPlaceholder: "Ex. : 16, 2,25 ou 3+4i",
-        hint: "Pris en charge : + − * / ^, sqrt, sin, cos, tan, log, ln, exp, pi, e, deg(...)",
         degreePlaceholder: "Ex. : 4",
         precisionPlaceholder: "Ex. : 6",
         errors: {
