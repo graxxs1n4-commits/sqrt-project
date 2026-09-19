@@ -128,12 +128,29 @@ def format_complex(z: complex, precision: int) -> str:
     re = 0.0 if abs(z.real) < eps else z.real
     im = 0.0 if abs(z.imag) < eps else z.imag
 
+    def trim(s: str) -> str:
+        s = f"{s:.{precision}f}"
+        if "." in s:
+            s = s.rstrip("0").rstrip(".")
+        return s
+
     if abs(im) < eps:
-        return f"{re:.{precision}f}".rstrip("0").rstrip(".")
+        return trim(re)
+
     if abs(re) < eps:
-        return f"{im:.{precision}f}i"
+        im_str = trim(im)
+        if im_str == "1":
+            return "i"
+        if im_str == "-1":
+            return "-i"
+        return f"{im_str}i"
+
+    re_str = trim(re)
+    im_abs_str = trim(abs(im))
     sign = "+" if im >= 0 else "-"
-    return f"{re:.{precision}f} {sign} {abs(im):.{precision}f}i"
+    if im_abs_str == "1":
+        im_abs_str = ""
+    return f"{re_str} {sign} {im_abs_str}i"
 
 
 def work_precision_for(number: Decimal) -> int:
