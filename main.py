@@ -123,7 +123,6 @@ def evaluate_expression(text: str):
         return None
 
 
-
 def decimal_root(value: Decimal, degree: int, precision: int) -> Decimal:
     getcontext().prec = precision + 20
 
@@ -220,7 +219,6 @@ def work_precision_for(number: Decimal) -> int:
     return max(120, digits + 50)
 
 
-
 @app.get("/")
 async def index(request: Request):
     return templates.TemplateResponse(
@@ -246,10 +244,10 @@ async def calculate(data: dict):
         return {"ok": False, "error": "number_too_large"}
 
     z = parse_complex(number_text)
-        if z is None:
-    z = evaluate_expression(number_text)
-        if z is None:
-            return {"ok": False, "error": "not_number"}
+    if z is None:
+        z = evaluate_expression(number_text)
+    if z is None:
+        return {"ok": False, "error": "not_number"}
 
     try:
         degree = int(degree_text)
