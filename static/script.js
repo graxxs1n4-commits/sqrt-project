@@ -10,12 +10,14 @@ const translations = {
         calculate: "Вычислить",
         result: "Результат",
         footer: "Язык можно менять без перезапуска программы.",
-        numberPlaceholder: "Например: 16 или 3+4i",
+        numberPlaceholder: "Например: 16, 2.25 или 3+4i",
         degreePlaceholder: "Например: 4",
         precisionPlaceholder: "Например: 6",
         errors: {
             number_required: "Введите число.",
             degree_required: "Введите степень корня.",
+            number_too_large: "Число слишком большое. Максимум 5000 символов.",
+            degree_too_large: "Слишком большая степень корня. Максимум 1000.",
             not_number: "Введенное вами значение не является числом.",
             degree_integer: "Степень должна быть целым числом.",
             degree_positive: "Степень корня должна быть больше нуля.",
@@ -38,12 +40,14 @@ const translations = {
         calculate: "Calculate",
         result: "Result",
         footer: "The language can be changed without restarting the program.",
-        numberPlaceholder: "For example: 16 or 3+4i",
+        numberPlaceholder: "For example: 16, 2.25 or 3+4i",
         degreePlaceholder: "For example: 4",
         precisionPlaceholder: "For example: 6",
         errors: {
             number_required: "Enter a number.",
             degree_required: "Enter the root degree.",
+            number_too_large: "The number is too large. Maximum 5000 characters.",
+            degree_too_large: "The root degree is too large. Maximum 1000.",
             not_number: "The value you entered is not a number.",
             degree_integer: "The degree must be an integer.",
             degree_positive: "The root degree must be greater than zero.",
@@ -125,8 +129,7 @@ function looksComplex(value) {
     return /i/i.test(value);
 }
 
-// При вводе комплексного числа — сразу показываем поле точности
-// При изменении числа или степени — прячем поле точности
+
 document.getElementById("number").addEventListener("input", () => {
     const value = document.getElementById("number").value;
     if (looksComplex(value)) {
