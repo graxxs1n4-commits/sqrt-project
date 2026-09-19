@@ -1,232 +1,114 @@
-const translations = {
-    ru: {
-        title: "Извлечение корня",
-        subtitle: "Корень любой степени, действительные и комплексные числа",
-        number: "Число",
-        degree: "Степень корня",
-        precision: "Знаков после запятой",
-        complex: "Показывать комплексные корни",
-        analytical: "Показать аналитическую форму",
-        calculate: "Вычислить",
-        result: "Результат",
-        footer: "Язык можно менять без перезапуска программы.",
-        numberPlaceholder: "Например: 16, 2.25 или 3+4i",
-        degreePlaceholder: "Например: 4",
-        precisionPlaceholder: "Например: 6",
-        errors: {
-            number_required: "Введите число.",
-            degree_required: "Введите степень корня.",
-            number_too_large: "Число слишком большое. Максимум 5000 символов.",
-            degree_too_large: "Слишком большая степень корня. Максимум 1000.",
-            not_number: "Введенное вами значение не является числом.",
-            degree_integer: "Степень должна быть целым числом.",
-            degree_positive: "Степень корня должна быть больше нуля.",
-            precision_required: "Результат не является целым числом. Укажите количество знаков после запятой ниже.",
-            precision_integer: "Количество знаков после запятой должно быть целым числом.",
-            precision_range: "Количество знаков после запятой должно быть от 0 до 100.",
-            even_negative: "Для отрицательного числа и четной степени нужны комплексные корни. Включите эту возможность.",
-            calculation_error: "Не удалось выполнить вычисление.",
-            unsupported: "Для этих входных данных невозможно получить действительный корень."
-        }
-    },
-    en: {
-        title: "Root Calculator",
-        subtitle: "Roots of any degree, real and complex numbers",
-        number: "Number",
-        degree: "Root degree",
-        precision: "Decimal places",
-        complex: "Show complex roots",
-        analytical: "Show analytical form",
-        calculate: "Calculate",
-        result: "Result",
-        footer: "The language can be changed without restarting the program.",
-        numberPlaceholder: "For example: 16, 2.25 or 3+4i",
-        degreePlaceholder: "For example: 4",
-        precisionPlaceholder: "For example: 6",
-        errors: {
-            number_required: "Enter a number.",
-            degree_required: "Enter the root degree.",
-            number_too_large: "The number is too large. Maximum 5000 characters.",
-            degree_too_large: "The root degree is too large. Maximum 1000.",
-            not_number: "The value you entered is not a number.",
-            degree_integer: "The degree must be an integer.",
-            degree_positive: "The root degree must be greater than zero.",
-            precision_required: "The result is not an integer. Enter the number of decimal places below.",
-            precision_integer: "The number of decimal places must be an integer.",
-            precision_range: "The number of decimal places must be between 0 and 100.",
-            even_negative: "A negative number with an even degree requires complex roots. Enable this option.",
-            calculation_error: "The calculation could not be completed.",
-            unsupported: "A real root cannot be obtained for these inputs."
-        }
-    },
-    fr: {
-        title: "Calculateur de racines",
-        subtitle: "Racines de tout degré, nombres réels et complexes",
-        number: "Nombre",
-        degree: "Indice de la racine",
-        precision: "Nombre de décimales",
-        complex: "Afficher les racines complexes",
-        analytical: "Afficher la forme analytique",
-        calculate: "Calculer",
-        result: "Résultat",
-        footer: "La langue peut être changée sans redémarrer le programme.",
-        numberPlaceholder: "Ex. : 16, 2,25 ou 3+4i",
-        degreePlaceholder: "Ex. : 4",
-        precisionPlaceholder: "Ex. : 6",
-        errors: {
-            number_required: "Veuillez saisir un nombre.",
-            degree_required: "Veuillez saisir l’indice de la racine.",
-            number_too_large: "Le nombre est trop grand. Maximum : 5000 caractères.",
-            degree_too_large: "L’indice est trop grand. Maximum : 1000.",
-            not_number: "La valeur saisie n’est pas un nombre.",
-            degree_integer: "L’indice doit être un entier.",
-            degree_positive: "L’indice de la racine doit être supérieur à zéro.",
-            precision_required: "Le résultat n’est pas un entier. Indiquez le nombre de décimales ci-dessous.",
-            precision_integer: "Le nombre de décimales doit être un entier.",
-            precision_range: "Le nombre de décimales doit être compris entre 0 et 100.",
-            even_negative: "Un nombre négatif avec un indice pair nécessite les racines complexes. Activez cette option.",
-            calculation_error: "Le calcul n’a pas pu être effectué.",
-            unsupported: "Impossible d’obtenir une racine réelle avec ces valeurs."
-        }
-    }
-};
-
-let language = ["ru", "en", "fr"].includes(localStorage.getItem("rootCalculatorLanguage"))
-    ? localStorage.getItem("rootCalculatorLanguage") : "ru";
-
-function applyLanguage() {
-    const t = translations[language];
-    document.documentElement.lang = language;
-
-    document.querySelectorAll("[data-i18n]").forEach(el => {
-        const key = el.dataset.i18n;
-        if (t[key]) el.textContent = t[key];
-    });
-
-    document.getElementById("number").placeholder = t.numberPlaceholder;
-    document.getElementById("degree").placeholder = t.degreePlaceholder;
-    document.getElementById("precision").placeholder = t.precisionPlaceholder;
-    const nextLanguage = {ru: "EN", en: "FR", fr: "RU"};
-    document.getElementById("languageButton").textContent = nextLanguage[language];
-    document.getElementById("languageButton").setAttribute("aria-label", `Switch language to ${nextLanguage[language]}`);
+:root {
+    --hse-blue: #0050a4;
+    --hse-blue-dark: #003b7a;
+    --hse-blue-light: #eaf3fc;
+    --ink: #172b4d;
+    --muted: #61758f;
+    --line: #c7d8eb;
 }
 
-document.getElementById("languageButton").addEventListener("click", () => {
-    language = {ru: "en", en: "fr", fr: "ru"}[language];
-    localStorage.setItem("rootCalculatorLanguage", language);
-    applyLanguage();
-    showMessage("");
-});
+* { box-sizing: border-box; }
 
-function showMessage(key) {
-    const box = document.getElementById("message");
-    if (!key) {
-        box.classList.add("hidden");
-        return;
-    }
-    box.textContent = translations[language].errors[key] || translations[language].errors.calculation_error;
-    box.classList.remove("hidden");
+body {
+    margin: 0;
+    min-height: 100vh;
+    border-top: 8px solid var(--hse-blue);
+    font-family: Arial, sans-serif;
+    background: #f4f8fc;
+    color: var(--ink);
 }
 
-function showResult(data) {
-    const result = document.getElementById("result");
-    const roots = document.getElementById("roots");
-    const analytical = document.getElementById("analyticalResult");
-
-    roots.innerHTML = "";
-    data.roots.forEach((root, index) => {
-        const div = document.createElement("div");
-        div.className = "root-item";
-        div.textContent = data.roots.length > 1
-            ? `x${index + 1} = ${root}`
-            : `x = ${root}`;
-        roots.appendChild(div);
-    });
-
-    analytical.textContent = data.analytical || "";
-    result.classList.remove("hidden");
+.container {
+    width: min(900px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 40px 0 24px;
 }
 
-function showPrecisionBox(show) {
-    const box = document.getElementById("precisionBox");
-    const input = document.getElementById("precision");
-    if (show) {
-        box.classList.remove("hidden");
-    } else {
-        box.classList.add("hidden");
-        input.value = "";
-    }
+header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 26px;
 }
 
-function looksComplex(value) {
-    return /i/i.test(value);
+h1 {
+    margin: 0 0 8px;
+    font-size: clamp(28px, 6vw, 52px);
+    letter-spacing: -0.035em;
+    color: var(--hse-blue);
 }
 
+header p { margin: 0; color: var(--muted); font-size: 18px; line-height: 1.5; }
 
-document.getElementById("number").addEventListener("input", () => {
-    const value = document.getElementById("number").value;
-    if (looksComplex(value)) {
-        showPrecisionBox(true);
-        const p = document.getElementById("precision");
-        if (!p.value) p.value = "6";
-    } else {
-        showPrecisionBox(false);
-    }
-    showMessage("");
-});
+.language-btn {
+    flex: 0 0 auto;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--hse-blue);
+    border-radius: 10px;
+    padding: 11px 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+.language-btn:hover { background: var(--hse-blue-light); border-color: var(--hse-blue); }
 
-document.getElementById("degree").addEventListener("input", () => {
-    showPrecisionBox(false);
-    showMessage("");
-});
+.card {
+    background: #fff;
+    border: 1px solid #e1ebf5;
+    border-radius: 20px;
+    padding: clamp(24px, 5vw, 42px);
+    box-shadow: 0 12px 36px rgba(0, 61, 125, .08);
+}
 
-document.getElementById("calculate").addEventListener("click", async () => {
-    const button = document.getElementById("calculate");
-    const result = document.getElementById("result");
+label { display: block; margin: 16px 0 7px; font-weight: 600; }
 
-    showMessage("");
-    result.classList.add("hidden");
-    button.disabled = true;
+input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    font-size: 17px;
+    color: var(--ink);
+    background: #fff;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+input::placeholder { color: #8798ad; }
+input:focus { border-color: var(--hse-blue); box-shadow: 0 0 0 3px rgba(0, 80, 164, .12); }
 
-    const precisionBoxVisible = !document.getElementById("precisionBox").classList.contains("hidden");
+.options { margin: 22px 0; }
+.check { display: flex; align-items: center; gap: 10px; margin: 12px 0; font-weight: 400; }
+.check input { width: 18px; height: 18px; accent-color: var(--hse-blue); }
 
-    const payload = {
-        number: document.getElementById("number").value,
-        degree: document.getElementById("degree").value,
-        precision: precisionBoxVisible ? document.getElementById("precision").value : "",
-        complex_mode: document.getElementById("complexMode").checked,
-        analytical: document.getElementById("analytical").checked
-    };
+.calculate {
+    width: 100%;
+    border: 0;
+    border-radius: 11px;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--hse-blue);
+    color: #fff;
+    transition: background .15s, transform .15s;
+}
+.calculate:hover { background: var(--hse-blue-dark); }
+.calculate:active { transform: translateY(1px); }
+.calculate:disabled { opacity: .6; cursor: wait; }
 
-    try {
-        const response = await fetch("/calculate", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(payload)
-        });
+.result { margin-top: 26px; padding-top: 24px; border-top: 1px solid #dce7f2; }
+.result h2 { margin-top: 0; color: var(--hse-blue); }
+.root-item { font-size: 20px; padding: 12px 14px; margin: 8px 0; background: var(--hse-blue-light); border-left: 3px solid var(--hse-blue); border-radius: 8px; overflow-wrap: anywhere; }
+.analytical { margin-top: 16px; font-family: "Times New Roman", serif; font-size: 21px; }
+.message { margin-top: 18px; padding: 12px 14px; border-radius: 9px; background: #fff1f1; color: #a12626; }
+.hidden { display: none !important; }
+footer { text-align: center; color: var(--muted); font-size: 14px; margin-top: 20px; }
 
-        const data = await response.json();
-
-        if (!data.ok) {
-            if (data.error === "precision_required") {
-                showPrecisionBox(true);
-                const precisionInput = document.getElementById("precision");
-                precisionInput.focus();
-                precisionInput.scrollIntoView({behavior: "smooth", block: "center"});
-            }
-            showMessage(data.error);
-        } else {
-            if (data.type === "real" || data.type === "zero") {
-                const allInteger = data.roots.every(r => !/[.,]/.test(r));
-                if (allInteger) showPrecisionBox(false);
-            }
-            showResult(data);
-        }
-    } catch (error) {
-        showMessage("calculation_error");
-    } finally {
-        button.disabled = false;
-    }
-});
-
-applyLanguage();
+@media (max-width: 520px) {
+    .container { width: min(100% - 20px, 900px); padding-top: 24px; }
+    header { align-items: center; }
+    header p { font-size: 15px; }
+    .card { border-radius: 15px; }
+}
