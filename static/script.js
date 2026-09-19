@@ -28,7 +28,6 @@ const translations = {
             even_negative: "Для отрицательного числа и четной степени нужны комплексные корни. Включите эту возможность.",
             calculation_error: "Не удалось выполнить вычисление.",
             unsupported: "Для этих входных данных невозможно получить действительный корень."
-            expression_has_variables: "Выражение содержит переменную. Введите число или числовое выражение.",
         }
     },
     en: {
@@ -60,7 +59,6 @@ const translations = {
             even_negative: "A negative number with an even degree requires complex roots. Enable this option.",
             calculation_error: "The calculation could not be completed.",
             unsupported: "A real root cannot be obtained for these inputs."
-            expression_has_variables: "The expression contains a variable. Enter a number or a numeric expression.",
         }
     },
     fr: {
@@ -92,7 +90,6 @@ const translations = {
             even_negative: "Un nombre négatif avec un indice pair nécessite les racines complexes. Activez cette option.",
             calculation_error: "Le calcul n’a pas pu être effectué.",
             unsupported: "Impossible d’obtenir une racine réelle avec ces valeurs."
-            expression_has_variables: "L'expression contient une variable. Entrez un nombre ou une expression numérique."
         }
     }
 };
