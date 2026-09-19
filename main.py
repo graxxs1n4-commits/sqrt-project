@@ -12,16 +12,16 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-
 _COMPLEX_RE = re.compile(
     r"^(?P<real>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)?"
     r"(?P<imag>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)i$"
 )
 
+MAX_INPUT_LENGTH = 5000
+
 
 def parse_complex(text: str):
-    """Разбирает строку как complex. Возвращает complex или None."""
-    text = text.strip().replace(" ", "")
+    text = text.strip().replace(" ", "").replace(",", ".")
     if not text:
         return None
 
@@ -66,10 +66,8 @@ def parse_complex(text: str):
     return complex(real, imag)
 
 
-
 def decimal_root(value: Decimal, degree: int, precision: int) -> Decimal:
-    """Метод Ньютона для действительного корня с заданной точностью."""
-    getcontext().prec = precision + 15
+    getcontext().prec = precision + 20
 
     if value == 0:
         return Decimal(0)
@@ -79,14 +77,16 @@ def decimal_root(value: Decimal, degree: int, precision: int) -> Decimal:
         value = -value
 
     try:
-        guess = Decimal(str(float(value) ** (1.0 / degree)))
-    except (OverflowError, ValueError):
+        ln_value = value.ln()
+        guess = (ln_value / degree).exp()
+    except (InvalidOperation, ValueError, OverflowError):
         guess = Decimal(1)
 
-    if guess == 0:
+    if not guess.is_finite() or guess == 0:
         guess = Decimal(1)
 
-    for _ in range(precision * 4 + 30):
+    max_iterations = precision * 4 + 50
+    for _ in range(max_iterations):
         previous = guess
         guess = ((degree - 1) * guess + value / (guess ** (degree - 1))) / degree
         if abs(guess - previous) < Decimal(10) ** (-(precision + 5)):
@@ -103,9 +103,7 @@ def format_decimal(value: Decimal, precision: int | None = None) -> str:
     return f"{value:.{precision}f}"
 
 
-
 def all_roots_of_complex(z: complex, degree: int):
-    """Все n корней n-й степени из комплексного числа z (формула Муавра)."""
     r = abs(z) ** (1.0 / degree)
     phi = math.atan2(z.imag, z.real)
     roots = []
@@ -116,7 +114,6 @@ def all_roots_of_complex(z: complex, degree: int):
 
 
 def all_complex_roots_real(value: float, degree: int):
-    """Все n корней из действительного числа (для отрицательных + чётная степень)."""
     r = abs(value) ** (1.0 / degree)
     theta = math.atan2(0.0, value) if value >= 0 else math.pi
     roots = []
@@ -137,6 +134,15 @@ def format_complex(z: complex, precision: int) -> str:
         return f"{im:.{precision}f}i"
     sign = "+" if im >= 0 else "-"
     return f"{re:.{precision}f} {sign} {abs(im):.{precision}f}i"
+
+
+def work_precision_for(number: Decimal) -> int:
+    try:
+        integer_part = int(abs(number))
+        digits = len(str(integer_part))
+    except (OverflowError, ValueError):
+        digits = 100
+    return max(120, digits + 50)
 
 
 
@@ -161,6 +167,9 @@ async def calculate(data: dict):
     if not degree_text:
         return {"ok": False, "error": "degree_required"}
 
+    if len(number_text) > MAX_INPUT_LENGTH:
+        return {"ok": False, "error": "number_too_large"}
+
     z = parse_complex(number_text)
     if z is None:
         return {"ok": False, "error": "not_number"}
@@ -172,6 +181,9 @@ async def calculate(data: dict):
 
     if degree <= 0:
         return {"ok": False, "error": "degree_positive"}
+
+    if degree > 1000:
+        return {"ok": False, "error": "degree_too_large"}
 
     if z.imag != 0:
         if precision_text:
@@ -218,7 +230,12 @@ async def calculate(data: dict):
         else:
             precision = 6
 
-        roots = all_complex_roots_real(float(number), degree)
+        try:
+            value_float = float(number)
+        except (OverflowError, ValueError):
+            return {"ok": False, "error": "calculation_error"}
+
+        roots = all_complex_roots_real(value_float, degree)
         formatted = [format_complex(r, precision) for r in roots]
 
         return {
@@ -231,8 +248,9 @@ async def calculate(data: dict):
     try:
         precision = None
         if number > 0:
-            getcontext().prec = 120
-            root = decimal_root(number, degree, 100)
+            work_prec = work_precision_for(number)
+            getcontext().prec = work_prec
+            root = decimal_root(number, degree, work_prec)
             is_integer = root == root.to_integral_value()
 
             if is_integer:
@@ -252,7 +270,7 @@ async def calculate(data: dict):
                 if precision < 0 or precision > 100:
                     return {"ok": False, "error": "precision_range"}
 
-                getcontext().prec = precision + 15
+                getcontext().prec = precision + 20
                 root = decimal_root(number, degree, precision)
                 root_text = format_decimal(root, precision)
                 roots = (
@@ -261,10 +279,11 @@ async def calculate(data: dict):
                     else [root_text]
                 )
         else:
-            if number < 0 and degree % 2 == 1:
+            if degree % 2 == 1:
                 if not precision_text:
-                    getcontext().prec = 120
-                    root = decimal_root(number, degree, 100)
+                    work_prec = work_precision_for(number)
+                    getcontext().prec = work_prec
+                    root = decimal_root(number, degree, work_prec)
                     if root == root.to_integral_value():
                         roots = [format_decimal(root)]
                     else:
