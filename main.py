@@ -21,50 +21,6 @@ from sympy.parsing.sympy_parser import (
 )
 
 
-_TRANSFORMS = (
-    standard_transformations
-    + (implicit_multiplication_application, convert_xor)
-)
-
-_ALLOWED_NAMES = {
-    "pi": pi,
-    "e": E,
-    "i": I,
-    "I": I,
-    "sin": sin, "cos": cos, "tan": tan,
-    "cot": cot, "sec": sec, "csc": csc,
-    "asin": asin, "acos": acos, "atan": atan,
-    "sinh": sinh, "cosh": cosh, "tanh": tanh,
-    "sqrt": sqrt, "exp": exp,
-    "log": log, "ln": ln, "abs": Abs, "Abs": Abs,
-    "deg": lambda x: sympify(x) * pi / 180,
-    "rad": lambda x: sympify(x),
-}
-
-
-def evaluate_expression(text: str):
-    if not text or len(text) > MAX_INPUT_LENGTH:
-        return None
-    try:
-        expr = parse_expr(
-            text,
-            transformations=_TRANSFORMS,
-            global_dict={},
-            local_dict=_ALLOWED_NAMES,
-            evaluate=True,
-        )
-    except Exception:
-        return None
-
-    if expr.free_symbols:
-        return None
-
-    try:
-        value = complex(N(expr, 30))
-    except Exception:
-        return None
-    return value
-
 BASE_DIR = Path(__file__).resolve().parent
 app = FastAPI(title="Root Calculator")
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
@@ -123,6 +79,49 @@ def parse_complex(text: str):
             return None
 
     return complex(real, imag)
+
+
+_TRANSFORMS = (
+    standard_transformations
+    + (implicit_multiplication_application, convert_xor)
+)
+
+_ALLOWED_NAMES = {
+    "pi": pi, "e": E, "i": I, "I": I,
+    "sin": sin, "cos": cos, "tan": tan,
+    "cot": cot, "sec": sec, "csc": csc,
+    "asin": asin, "acos": acos, "atan": atan,
+    "sinh": sinh, "cosh": cosh, "tanh": tanh,
+    "sqrt": sqrt, "exp": exp,
+    "log": log, "ln": ln, "abs": Abs, "Abs": Abs,
+    "deg": lambda x: sympify(x) * pi / 180,
+    "rad": lambda x: sympify(x),
+}
+
+
+def evaluate_expression(text: str):
+    """Парсит sin(pi/4), sqrt(2), 2pi и т.п. Возвращает complex или None."""
+    if not text or len(text) > MAX_INPUT_LENGTH:
+        return None
+    try:
+        expr = parse_expr(
+            text,
+            transformations=_TRANSFORMS,
+            global_dict={},
+            local_dict=_ALLOWED_NAMES,
+            evaluate=True,
+        )
+    except Exception:
+        return None
+
+    if expr.free_symbols:
+        return None
+
+    try:
+        return complex(N(expr, 30))
+    except Exception:
+        return None
+
 
 
 def decimal_root(value: Decimal, degree: int, precision: int) -> Decimal:
@@ -247,10 +246,10 @@ async def calculate(data: dict):
         return {"ok": False, "error": "number_too_large"}
 
     z = parse_complex(number_text)
-    if z is None:
-        z = evaluate_expression(number_text)
-    if z is None:
-        return {"ok": False, "error": "not_number"}
+        if z is None:
+    z = evaluate_expression(number_text)
+        if z is None:
+            return {"ok": False, "error": "not_number"}
 
     try:
         degree = int(degree_text)
