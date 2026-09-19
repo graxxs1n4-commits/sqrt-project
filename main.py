@@ -1,4 +1,5 @@
 import math
+from pathlib import Path
 import re
 from decimal import Decimal, InvalidOperation, getcontext
 
@@ -7,9 +8,10 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+BASE_DIR = Path(__file__).resolve().parent
 app = FastAPI(title="Root Calculator")
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 
 _COMPLEX_RE = re.compile(
